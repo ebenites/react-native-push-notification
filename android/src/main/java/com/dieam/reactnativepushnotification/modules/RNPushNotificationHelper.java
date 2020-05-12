@@ -26,6 +26,21 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import androidx.core.app.NotificationCompat;
 
+import androidx.annotation.Nullable;
+
+import com.facebook.common.executors.CallerThreadExecutor;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.common.Priority;
+import com.facebook.imagepipeline.common.ResizeOptions;
+import com.facebook.imagepipeline.core.ImagePipeline;
+import com.facebook.imagepipeline.core.ImagePipelineConfig;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -150,7 +165,34 @@ public class RNPushNotificationHelper {
         }
     }
 
-    public void sendToNotificationCentre(Bundle bundle) {
+    public void sendToNotificationCentre(final Bundle bundle) {
+        if (bundle.getString("imageUrl") != null){
+            ImageRequest imageRequest = ImageRequestBuilder
+                    .newBuilderWithSource(Uri.parse(bundle.getString("imageUrl")))
+                    .setRequestPriority(Priority.HIGH)
+                    .setLowestPermittedRequestLevel(ImageRequest.RequestLevel.FULL_FETCH)
+                    .build();
+
+            ImagePipeline imagePipeline = Fresco.getImagePipeline();
+            DataSource<CloseableReference<CloseableImage>> dataSource =
+                    imagePipeline.fetchDecodedImage(imageRequest, context);
+
+            dataSource.subscribe(new BaseBitmapDataSubscriber() {
+                @Override
+                public void onNewResultImpl(final @Nullable Bitmap bitmap) {
+                    sendToNotificationCentreWithImage(bundle, bitmap);
+                }
+                @Override
+                public void onFailureImpl(DataSource dataSource) {
+                    sendToNotificationCentreWithImage(bundle, null);
+                }
+            }, CallerThreadExecutor.getInstance());
+        } else {
+            sendToNotificationCentreWithImage(bundle, null);
+        }
+    }
+
+    public void sendToNotificationCentreWithImage(Bundle bundle, Bitmap image) {
         try {
             Class intentClass = getMainActivityClass();
             if (intentClass == null) {
@@ -329,8 +371,20 @@ public class RNPushNotificationHelper {
                 bigText = bundle.getString("message");
             }
 
-            notification.setStyle(new NotificationCompat.BigTextStyle().bigText(bigText));
+            if (image != null){
+                notification.setLargeIcon(image);
+            }
 
+            if(image != null){
+                notification.setStyle(
+                        new NotificationCompat.BigPictureStyle()
+                                .bigPicture(image)
+                                .bigLargeIcon(null)
+                );
+            } else {
+                notification.setStyle(new NotificationCompat.BigTextStyle().bigText(bigText));
+            }
+            
             Intent intent = new Intent(context, intentClass);
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             bundle.putBoolean("userInteraction", true);

@@ -292,6 +292,7 @@ PushNotification.localNotification({
   importance: "high", // (optional) set notification importance, default: high
   allowWhileIdle: false, // (optional) set notification to work while on doze, default: false
   ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear)
+  imageUrl: 'url image' // (optional) set url big image
 
   /* iOS only properties */
   alertAction: "view", // (optional) default: view
@@ -306,6 +307,7 @@ PushNotification.localNotification({
   number: 10, // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
   repeatType: "day", // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
   actions: '["Yes", "No"]', // (Android only) See the doc for notification actions to know more
+  data: {}, // (optional) payload json data
 });
 ```
 
