@@ -334,7 +334,7 @@ public class RNPushNotificationHelper {
             }
 
             int smallIconResId;
-            int largeIconResId;
+            int largeIconResId = 0;
 
             String smallIcon = bundle.getString("smallIcon");
 
@@ -352,30 +352,27 @@ public class RNPushNotificationHelper {
                 }
             }
 
+            notification.setSmallIcon(smallIconResId);
+
             if (largeIcon != null) {
                 largeIconResId = res.getIdentifier(largeIcon, "mipmap", packageName);
             } else {
-                largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
+                // largeIconResId = res.getIdentifier("ic_launcher", "mipmap", packageName);
             }
 
-            Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
-
             if (largeIconResId != 0 && (largeIcon != null || Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)) {
+                Bitmap largeIconBitmap = BitmapFactory.decodeResource(res, largeIconResId);
                 notification.setLargeIcon(largeIconBitmap);
             }
 
-            notification.setSmallIcon(smallIconResId);
             String bigText = bundle.getString("bigText");
 
             if (bigText == null) {
                 bigText = bundle.getString("message");
             }
 
-            if (image != null){
-                notification.setLargeIcon(image);
-            }
-
             if(image != null){
+                notification.setLargeIcon(image);
                 notification.setStyle(
                         new NotificationCompat.BigPictureStyle()
                                 .bigPicture(image)

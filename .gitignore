@@ -21,6 +21,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
+.settings
 
 # Android/IJ
 #
@@ -28,6 +29,7 @@ project.xcworkspace
 .gradle
 local.properties
 *.iml
+.classpath
 
 # node.js
 #
